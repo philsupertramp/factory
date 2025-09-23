@@ -13,7 +13,11 @@ from fastapi import FastAPI, Response, File, UploadFile, Form
 from pydantic import BaseModel
 from io import BytesIO
 from factory.ml import manager
-from factory.api.models import GenerationRequest, TextToImageRequest, ImageToImageRequest, TextToSpeechRequest, TextGenerationRequest, ChatCompletionRequest, SpeechToTextRequest
+from factory.api.models import (
+    GenerationRequest, TextToImageRequest, ImageToImageRequest,
+    TextToSpeechRequest, TextGenerationRequest, ChatCompletionRequest,
+    SpeechToTextRequest
+)
 from tempfile import NamedTemporaryFile
 from PIL import Image
 
@@ -36,7 +40,11 @@ def send_image_response_base64(results: bytes, format: str = "image/jpeg") -> Re
             if isinstance(results[0], dict):
                 for result in results:
                     response.append({
-                        key: value.tolist() if isinstance(value, (np.ndarray, torch.Tensor)) else value
+                        key: (
+                            value.tolist()
+                            if isinstance(value, (np.ndarray, torch.Tensor))
+                            else value
+                        )
                         for key, value in result.items()
                     })
                 response = json.dumps(response)
@@ -46,7 +54,10 @@ def send_image_response_base64(results: bytes, format: str = "image/jpeg") -> Re
             response = json.dumps(results)
         else:
             response = json.dumps([results.tolist()])
-    return Response(content=response[0] if len(response) == 1 else response, media_type=format)
+    return Response(
+        content=response[0] if len(response) == 1 else response,
+        media_type=format
+    )
 
 
 response_type_map = {

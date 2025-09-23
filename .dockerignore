@@ -1,2 +1,46 @@
-.git/
-.venv/
+##################################################################################
+## THIS FILE WAS GENERATED -- DO NOT EDIT!
+##
+## In order to get .dockerignore back in sync, run:
+##   ./generate_whitelist_dockerignore_file.sh > .dockerignore
+##################################################################################
+
+# Ignore everything
+*
+
+# Unignore files generated during build
+!version.txt
+
+# Unignore hidden files used during execution of tests/linters (from within Docker image)
+!.flake8
+!.isort.cfg
+!.pre-commit-config.yaml
+!.relint.yml
+!.coveragerc
+!.env.dist
+!.env
+
+# Unignore files based on "git ls-files"
+!demos/dnd/dnd/*.py
+!demos/dnd/*.json
+!demos/dnd/*.md
+!demos/*.py
+!Dockerfile
+!factory/api/*.py
+!factory/ml/pipelines/*.py
+!factory/ml/*.py
+!factory/vendors/bark/*.py
+!factory/vendors/kokoro/*.json
+!factory/vendors/kokoro/*.py
+!factory/vendors/*.py
+!factory/*.py
+!LICENSE
+!scripts/*.py
+!*.conf
+!*.lock
+!*.log
+!*.md
+!*.py
+!*.sh
+!*.toml
+!*.yml

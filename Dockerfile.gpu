@@ -1,0 +1,37 @@
+FROM pytorch/pytorch:2.8.0-cuda12.9-cudnn9-runtime
+ENV PIP_NO_CACHE_DIR=off \
+    PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_DEFAULT_TIMEOUT=100 \
+    VENV_PATH=/opt/venv
+ENV PATH="$VENV_PATH/bin:$PATH:/root/.local/bin"
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install  -y \
+        # deps for installing poetry
+        curl wget \
+        build-essential \
+        ffmpeg libsm6 libxext6 \
+    \
+    # cleanup
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install poetry==2.0.1 poetry-plugin-export
+COPY pyproject.toml /code/
+COPY poetry.lock /code/
+
+RUN poetry export -o requirements.txt --without-hashes
+
+RUN pip install -r requirements.txt
+
+
+WORKDIR /app
+
+COPY . ./
+
+RUN ./download_models.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["poetry", "run", "uvicorn", "app_v2:app", "--port", "8000", "--host", "0.0.0.0"]
+
