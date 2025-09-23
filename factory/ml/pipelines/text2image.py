@@ -19,8 +19,6 @@ from transformers import (
     set_seed,
     BitsAndBytesConfig,
 )
-from hart.modules.models.transformer import HARTForT2I
-from hart.utils import default_prompts, encode_prompts, llm_system_prompt
 
 from factory.ml.models import DiffusionPipelineConfig, ONNXDiffusionPipelineConfig
 from factory.ml.pipelines.general import PipelineMixin
@@ -267,6 +265,7 @@ class HARTPipeline(PipelineMixin):
         more_smooth: bool = True,
         enhance_prompt: bool = True,
     ):
+        from hart.utils import encode_prompts, llm_system_prompt
         # pipe.to(device)
         seed = int(self.randomize_seed_fn(seed, randomize_seed))
         generator = torch.Generator().manual_seed(seed)
@@ -339,4 +338,51 @@ class HARTPipeline(PipelineMixin):
         if is_multi:
             raise ValueError("Invalid task")
         return "text-to-image"
+
+
+class SanaPipeline(PipelineMixin):
+    def __init__(self, model_name):
+        self.model_name = model_name
+        self.model_params = {
+            "num_inference_steps": 1,
+            'negative_prompt': '',
+            'num_images_per_prompt': 1,
+            'guidance_scale': 4.5,
+            'eta': 0.0,
+            'height': 512,
+            'width': 512,
+            'complex_human_instruction': ['instructions']
+        }
+        self.device = torch.device('cpu')#"cuda" if torch.cuda.is_available() else "cpu")
+        self.pipe = None
+
+    def _load_pipeline(self):
+        from diffusers import SanaPipeline as HFSanaPipeline
+        self.pipe = HFSanaPipeline.from_pretrained(self.model_name, variant='fp16')
+        self.pipe.to(self.device)
+        self.pipe.text_encoder.to(torch.bfloat16)
+        self.pipe.transformer = self.pipe.transformer.to(torch.float16)
+
+    def get_options(self):
+        return {
+            'task': 'text-to-image',
+            'output_type': 'image',
+            'parameters': {
+                'inputs': 'An image of a cat',
+                **self.model_params,
+            }
+        }
+
+    def get_task(self, is_multi):
+        if is_multi:
+            raise ValueError("Invalid task")
+        return "text-to-image"
+
+    def run_task(self, task):
+        params = task.parameters.dict()
+        filtered_params = {k: v for k, v in params.items() if k in self.model_params}
+        generation = self.pipe(task.inputs, **filtered_params)[0]
+        # clear caches
+        torch.cuda.empty_cache()
+        return generation
 

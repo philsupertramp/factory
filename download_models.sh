@@ -55,4 +55,34 @@ set -e
     fi
     wget -O phi-3-mini-128k-chat/$file_name https://huggingface.co/microsoft/Phi-3-mini-128k-instruct-onnx/resolve/main/cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4/$file_name
   done
+
+  echo "Fetching Kokoro files..."
+
+  vendor_file_names=(
+    "config.json"
+  )
+
+  for file_name in "${vendor_file_names[@]}"
+  do
+    wget -O ../factory/vendors/kokoro/$file_name https://huggingface.co/hexgrad/Kokoro-82M/resolve/main/$file_name
+  done
+
+  file_names=(
+    "kokoro-v0_19.pth"
+    "voices/af.pt"
+    "voices/af_bella.pt"
+    "voices/af_nicole.pt"
+    "voices/af_sarah.pt"
+    "voices/af_sky.pt"
+    "voices/am_adam.pt"
+    "voices/am_michael.pt"
+    "voices/bf_emma.pt"
+    "voices/bf_isabella.pt"
+    "voices/bm_george.pt"
+    "voices/bm_lewis.pt"
+    )
+  for file_name in "${file_names[@]}"
+  do
+    wget -O ./tts/kokoro/$file_name https://huggingface.co/hexgrad/Kokoro-82M/resolve/main/$file_name
+  done
 )

@@ -128,6 +128,12 @@ class ChatPipelineMixin(PipelineMixin):
             'output_type': 'text',
             'parameters': {
                 'inputs': 'A text to chat about',
+                'temperature': 'The temperature of the model',
+                'max_new_tokens': 'The maximum number of tokens to generate',
+                'top_k': 'The top k tokens to sample from',
+                'top_p': 'The top p tokens to sample from',
+                'repetition_penalty': 'The repetition penalty',
+                'num_beams': 'The number of beams to use when searching for the next token',
             }
         }
 

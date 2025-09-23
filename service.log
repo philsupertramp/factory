@@ -1,0 +1,56 @@
+[2024-12-30 15:14:15,682.682] INFO [140602612281472] - 127.0.0.1:58230 - "POST /models/Qwen HTTP/1.1" 500
+[2024-12-30 15:14:15,682.682] ERROR [140602612281472] - Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/uvicorn/protocols/http/h11_impl.py", line 407, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/uvicorn/middleware/proxy_headers.py", line 69, in __call__
+    return await self.app(scope, receive, send)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/fastapi/applications.py", line 289, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/starlette/applications.py", line 122, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 184, in __call__
+    raise exc
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/starlette/middleware/errors.py", line 162, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 79, in __call__
+    raise exc
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/starlette/middleware/exceptions.py", line 68, in __call__
+    await self.app(scope, receive, sender)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/fastapi/middleware/asyncexitstack.py", line 20, in __call__
+    raise e
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/fastapi/middleware/asyncexitstack.py", line 17, in __call__
+    await self.app(scope, receive, send)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/starlette/routing.py", line 718, in __call__
+    await route.handle(scope, receive, send)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/starlette/routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/starlette/routing.py", line 66, in app
+    response = await func(request)
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/fastapi/routing.py", line 273, in app
+    raw_response = await run_endpoint_function(
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/fastapi/routing.py", line 190, in run_endpoint_function
+    return await dependant.call(**values)
+  File "/home/phil/work/mb/easybits/factory/app_v2.py", line 95, in generate
+    results = model.run_task(task)
+  File "/home/phil/work/mb/easybits/factory/factory/ml/pipelines/text2text.py", line 122, in run_task
+    return self.chat_completion(task.inputs, task.parameters)
+  File "/home/phil/work/mb/easybits/factory/factory/ml/pipelines/text2text.py", line 150, in chat_completion
+    text = self.tokenizer.apply_chat_template(
+  File "/home/phil/work/mb/easybits/factory/.venv/lib/python3.10/site-packages/transformers/tokenization_utils_base.py", line 1814, in apply_chat_template
+    isinstance(conversation[0], (list, tuple)) or hasattr(conversation[0], "messages")
+IndexError: list index out of range
+[2024-12-30 15:15:16,803.803] INFO [140602612281472] - 127.0.0.1:54536 - "POST /models/Qwen HTTP/1.1" 200
+[2024-12-30 15:15:17,671.671] INFO [140602612281472] - 127.0.0.1:54536 - "POST /models/Qwen HTTP/1.1" 200
+[2024-12-30 15:17:16,688.688] INFO [140602612281472] - 127.0.0.1:56642 - "POST /models/Qwen HTTP/1.1" 200
+[2024-12-30 15:17:20,631.631] INFO [140602612281472] - 127.0.0.1:56642 - "POST /models/Qwen HTTP/1.1" 200
+[2024-12-30 15:20:16,692.692] INFO [140602612281472] - 127.0.0.1:52536 - "POST /models/Qwen HTTP/1.1" 200
+[2024-12-30 15:20:20,656.656] INFO [140602612281472] - 127.0.0.1:52536 - "POST /models/Qwen HTTP/1.1" 200
+[2024-12-30 15:21:36,573.573] INFO [140602612281472] - 127.0.0.1:39814 - "POST /models/Qwen HTTP/1.1" 200
+[2024-12-30 15:21:40,537.537] INFO [140602612281472] - 127.0.0.1:39814 - "POST /models/Qwen HTTP/1.1" 200
+[2024-12-30 15:22:51,533.533] INFO [140602612281472] - 127.0.0.1:51370 - "POST /models/Qwen HTTP/1.1" 400
+[2024-12-30 15:24:45,346.346] INFO [140602612281472] - 127.0.0.1:46502 - "POST /models/Qwen HTTP/1.1" 400
+[2024-12-30 15:24:53,947.947] INFO [140602612281472] - Shutting down
+[2024-12-30 15:24:54,048.048] INFO [140602612281472] - Waiting for application shutdown.
+[2024-12-30 15:24:54,048.048] INFO [140602612281472] - Application shutdown complete.
+[2024-12-30 15:24:54,049.049] INFO [140602612281472] - Finished server process [100473]

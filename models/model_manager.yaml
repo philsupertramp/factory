@@ -1,3 +1,11 @@
 base_models:
-  hart:
-    constructor: HARTPipeline
+  #sana:
+  #  constructor: SanaPipeline
+  #  args:
+  #    - 'Efficient-Large-Model/Sana_600M_512px_diffusers'
+  llama:
+    constructor: ChatPipeline
+    args:
+      - 'meta-llama/Llama-3.2-1B-Instruct'
+  kokoro:
+    constructor: KokoroTTSPipeline

@@ -1,19 +1,26 @@
-from factory.ml.pipelines.general import PipelineMixin
-from factory.ml.pipelines.utils.bark_generation import generate_text_semantic, preload_models
-from factory.ml.pipelines.utils.bark_api import semantic_to_waveform
-import nltk
 import random
-from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, SpeechT5HifiGan, AutoProcessor, AutoModel
 from tempfile import NamedTemporaryFile
-from pydub import AudioSegment
-from scipy.io.wavfile import write
 from io import BytesIO
+
 import torch
+import nltk
 import numpy as np
+
+from scipy.io.wavfile import write
+from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, SpeechT5HifiGan, AutoProcessor, AutoModel
+from pydub import AudioSegment
+
+from factory.ml.pipelines.general import PipelineMixin
+from factory.vendors.bark.generation import generate_text_semantic, preload_models
+from factory.vendors.bark.api import semantic_to_waveform
+from factory.vendors.kokoro.models import build_model as kokoro_build_model
+from factory.vendors.kokoro.kokoro import generate as kokoro_generate
 
 
 class TTSMixin:
+    output_type = "audio"
     sample_rate = None
+
     def speech_to_binary(self, speech):
         assert self.sample_rate is not None, "sample_rate is not set"
 
@@ -26,10 +33,19 @@ class TTSMixin:
             sound.export(buffer, format="flac")
 
         return buffer.getvalue()
+        
+    def run_task(self, task):
+        if task.task == "text-to-speech":
+            return self.text_to_speech(task.inputs, {**self.model_params, **task.parameters})
+        raise ValueError("Invalid task")
+
+    def get_task(self, is_multi):
+        if is_multi:
+            raise ValueError("Invalid task")
+        return "text-to-speech"
 
 
 class Speech5TTSPipeline(PipelineMixin, TTSMixin):
-    output_type = "audio"
     sample_rate = 16000
 
     def __init__(self, speaker_name='tts'):
@@ -77,16 +93,6 @@ class Speech5TTSPipeline(PipelineMixin, TTSMixin):
         self.speaker_embeddings = np.load(self.speaker_embeddings)
         self.speaker_embeddings = torch.from_numpy(self.speaker_embeddings).to(self.device).unsqueeze(0)
 
-    def get_task(self, is_multi):
-        if is_multi:
-            raise ValueError("Invalid task")
-        return "text-to-speech"
-
-    def run_task(self, task):
-        if task.task == "text-to-speech":
-            return self.text_to_speech(task.inputs, task.parameters)
-        raise ValueError("Invalid task")
-
     def text_to_speech(self, text, parameters):
         if len(text.strip()) == 0:
             return self.speech_to_binary(np.zeros(0).astype(np.int16))
@@ -102,7 +108,6 @@ class Speech5TTSPipeline(PipelineMixin, TTSMixin):
 
 
 class BarkTTSPipeline(PipelineMixin, TTSMixin):
-    output_type = "audio"
     sample_rate = 24000
 
     def __init__(self, speaker_name='bark'):
@@ -133,16 +138,6 @@ class BarkTTSPipeline(PipelineMixin, TTSMixin):
             'speakers': list(self.speakers.keys())
         }
 
-    def get_task(self, is_multi):
-        if is_multi:
-            raise ValueError("Invalid task")
-        return "text-to-speech"
-
-    def run_task(self, task):
-        if task.task == "text-to-speech":
-            return self.text_to_speech(task.inputs, {**self.model_params, **task.parameters})
-        raise ValueError("Invalid task")
-
     def text_to_speech(self, text, parameters):
         speaker = self.speakers.get(parameters.get('speaker'), './models/tts/en_speaker_3.npz')
         GEN_TEMP = 0.6
@@ -164,3 +159,82 @@ class BarkTTSPipeline(PipelineMixin, TTSMixin):
 
         return self.speech_to_binary(np.concatenate(pieces))
 
+
+class KokoroTTSPipeline(TTSMixin, PipelineMixin,):
+    output_type = 'audio'
+    sample_rate = 24000
+
+    def __init__(self):
+        self.model_name = './models/tts/kokoro/kokoro-v0_19.pth'
+        self.device = 'cpu'
+        self.voice_names = [
+            'af', # Default voice is a 50-50 mix of Bella & Sarah
+            'af_bella', 'af_sarah', 'am_adam', 'am_michael',
+            'bf_emma', 'bf_isabella', 'bm_george', 'bm_lewis',
+            'af_nicole', 'af_sky',
+        ]
+        self.model_params = {}
+
+    def get_options(self):
+        return {
+            'task': 'text-to-speech',
+            'output_type': self.output_type,
+            'info': {
+                'description': 'Kokoro is a text-to-speech model that can generate high-quality speech from text with only 82M parameters.',
+                'sample_rate': self.sample_rate,
+            },
+            'parameters': {
+                'inputs': 'An image of a cat',
+                'speakers': self.voice_names,
+                'speed': 1.0,
+                **self.model_params,
+            },
+        }
+
+    def _load_pipeline(self):
+        self.model = kokoro_build_model(self.model_name, self.device)
+
+    def text_to_speech(self, text, parameters):
+        speaker_name = parameters.get('speaker', 'bf_emma')
+        voice_pack = torch.load(f'./models/tts/kokoro/voices/{speaker_name}.pt', weights_only=True).to(self.device)
+        
+        audio, ops = kokoro_generate(self.model, text, voice_pack, lang=speaker_name[0], speed=parameters.get('speed', 1.0))
+        return self.speech_to_binary(audio)
+
+
+class PipeTTS(TTSMixin, PipelineMixin,):
+    output_type = 'audio'
+
+    def __init__(self):
+        self.model_name = ''
+        self.device = 'cpu'
+        self.voice_names = []
+        self.model_params = {}
+
+    def get_options(self):
+        return {
+            'task': 'text-to-speech',
+            'output_type': self.output_type,
+            'info': {
+                'sample_rate': self.sample_rate
+            },
+            'parameters': {
+                'inputs': 'An image of a cat',
+                'speakers': self.voice_names,
+                **self.model_params
+            }
+        }
+
+    def _load_pipeline(self):
+        pass
+
+    def text_to_speech(self, text, parameters):
+        speaker_name = parameters.get('speaker', 'en_US-lessac-medium')
+        voice = PiperVoice.load(args.model, config_path=args.config, use_cuda=args.cuda)
+        synthesize_args = {
+            "speaker_id": args.speaker,
+            "length_scale": args.length_scale,
+            "noise_scale": args.noise_scale,
+            "noise_w": args.noise_w,
+            "sentence_silence": args.sentence_silence,
+        }

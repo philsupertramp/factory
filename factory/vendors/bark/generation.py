@@ -14,8 +14,8 @@ import tqdm
 from transformers import BertTokenizer
 from huggingface_hub import hf_hub_download
 
-from .bark_model import GPTConfig, GPT
-from .bark_model_fine import FineGPT, FineGPTConfig
+from .model import GPTConfig, GPT
+from .model_fine import FineGPT, FineGPTConfig
 
 if (
     torch.cuda.is_available() and
@@ -818,3 +818,4 @@ def codec_decode(fine_tokens):
     if OFFLOAD_CPU:
         model.to("cpu")
     return audio_arr
+
