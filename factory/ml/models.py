@@ -61,5 +61,9 @@ class ControlNetConfig(BaseModel):
 
     def __post_init__(self):
         if 'torch_dtype' in self.config:
-            self.config['torch_dtype'] = torch.float16 if self.config['torch_dtype'] == 'float16' else torch.float32
+            self.config['torch_dtype'] = (
+                torch.float16
+                if self.config['torch_dtype'] == 'float16'
+                else torch.float32
+            )
 

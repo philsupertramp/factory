@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from .bark_model import GPT, GPTConfig, MLP
+from .model import GPT, GPTConfig, MLP
 
 
 class NonCausalSelfAttention(nn.Module):
@@ -147,3 +147,4 @@ class FineGPT(GPT):
 class FineGPTConfig(GPTConfig):
     n_codes_total: int = 8
     n_codes_given: int = 1
+

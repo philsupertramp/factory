@@ -1,4 +1,12 @@
-from .pipelines import IPFaceIDPipeline, IPPipeline, DiffusionModel, ONNXDiffusionModel, Speech5TTSPipeline, BarkTTSPipeline, SummarizationPipeline, QRCodePipeline, ChatPipeline, SpeechToTextPipeline, ONNXChatPipeline, HARTPipeline, SanaPipeline, KokoroTTSPipeline
+from .pipelines import (
+    IPFaceIDPipeline, IPPipeline,
+    DiffusionModel, ONNXDiffusionModel,
+    Speech5TTSPipeline, BarkTTSPipeline,
+    SummarizationPipeline, QRCodePipeline,
+    ChatPipeline, SpeechToTextPipeline,
+    ONNXChatPipeline, HARTPipeline,
+    SanaPipeline, KokoroTTSPipeline
+)
 import yaml
 
 
@@ -47,7 +55,6 @@ class ModelManager:
             if self.require_model_load:
                 model._load_pipeline()
             self.models['models'][model_name] = model
-
 
     def load_model(self, config):
         constructor = config.get('constructor')
